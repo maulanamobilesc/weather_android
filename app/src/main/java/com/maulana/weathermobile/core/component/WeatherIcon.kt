@@ -7,8 +7,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
-enum class WeatherIconSize{
-    SMALL,BIG
+enum class WeatherIconSize {
+    SMALL, BIG
 }
 
 @Composable
@@ -18,7 +18,7 @@ fun WeatherIcon(weatherCode: String?, size: WeatherIconSize = WeatherIconSize.BI
         contentDescription = "main weather icon",
         contentScale = ContentScale.FillWidth,
         modifier = Modifier
-            .width(if(size == WeatherIconSize.BIG)200.dp else 50.dp)
+            .width(if (size == WeatherIconSize.BIG) 200.dp else 50.dp)
     )
 }
 

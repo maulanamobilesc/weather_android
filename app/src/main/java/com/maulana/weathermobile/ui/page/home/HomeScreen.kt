@@ -1,20 +1,21 @@
 package com.maulana.weathermobile.ui.page.home
 
 import android.Manifest
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,8 +27,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -38,11 +43,13 @@ import com.maulana.warehouse.core.component.PageErrorMessageHandler
 import com.maulana.warehouse.core.component.Spacer
 import com.maulana.warehouse.domain.UIState
 import com.maulana.warehouse.util.GlobalDimension
+import com.maulana.weathermobile.R
 import com.maulana.weathermobile.core.component.RationaleAlert
 import com.maulana.weathermobile.core.component.WeatherIcon
 import com.maulana.weathermobile.core.component.WeatherIconSize
 import com.maulana.weathermobile.domain.model.CurrentWeather
 import com.maulana.weathermobile.domain.model.Forecast
+import com.maulana.weathermobile.util.AppColor
 import com.maulana.weathermobile.util.convertToHourFormat
 import com.maulana.weathermobile.util.hasLocationPermission
 import java.time.LocalDate
@@ -127,18 +134,34 @@ fun HomeContent(
 
 @Composable
 fun ForecastContent(forecasts: List<Forecast>) {
-    Column(Modifier.fillMaxWidth()) {
-        Text(text = getCurrentDate())
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(color = Color(0xFF2C79C1))
+    ) {
+        Text(
+            text = getCurrentDate(),
+            color = AppColor.textColor,
+            modifier = Modifier.padding(GlobalDimension.sectionPadding),
+            fontWeight = FontWeight.Bold
+        )
         LazyRow(modifier = Modifier.fillMaxWidth()) {
-            itemsIndexed(items = forecasts) { index, item ->
+            items(items = forecasts) { item ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(GlobalDimension.smallPadding)
                 ) {
-                    Text(item.dtTxt.orEmpty().convertToHourFormat())
+                    Text(
+                        item.dtTxt.orEmpty().convertToHourFormat(),
+                        color = AppColor.textColor,
+                        fontWeight = FontWeight.Bold
+                    )
                     WeatherIcon(item.weather?.first()?.icon, WeatherIconSize.SMALL)
-                    Text("${item.main?.tempMin}°C/${item.main?.tempMax}°C")
-                    Text("${item.pop?.times(100)?.toInt()}% rain")
+                    Text(
+                        "${item.main?.tempMin?.toInt()}°c/${item.main?.tempMax?.toInt()}°c",
+                        color = AppColor.textColor
+                    )
+                    Text("${item.pop?.times(100)?.toInt()}% rain", color = AppColor.textColor)
                 }
             }
         }
@@ -147,83 +170,156 @@ fun ForecastContent(forecasts: List<Forecast>) {
 
 @Composable
 fun MainContent(currentWeather: CurrentWeather) {
-    Card(
-        shape = RoundedCornerShape(30.dp),
-        modifier = Modifier.padding(GlobalDimension.sectionPadding)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(GlobalDimension.sectionPadding)
+            .background(
+                shape = RoundedCornerShape(30.dp), brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF62B8F6),
+                        Color(0xFF2C79C1)
+                    )
+                ), alpha = 1.0f
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
+        Row(
             Modifier
                 .fillMaxWidth()
-                .padding(GlobalDimension.smallPadding),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(GlobalDimension.sectionPadding),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            IconButton(onClick = {}) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Icon",
+                    tint = AppColor.textColor
+                )
+            }
+            Text(text = currentWeather.name.orEmpty(), color = AppColor.textColor)
+            IconButton(onClick = { }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More", tint = AppColor.textColor)
+            }
+        }
+        WeatherIcon(currentWeather.weather?.first()?.icon)
+        Text(text = getCurrentDate(), color = AppColor.textColor)
+        Text(
+            "${(currentWeather.main?.temp ?: 0.0).toInt()}°c",
+            fontSize = GlobalDimension.contentTitleFontSize,
+            color = AppColor.textColor,
+            fontWeight = FontWeight.Bold
+        )
+        Text(currentWeather.weather?.first()?.description.orEmpty(), color = AppColor.textColor)
+        Spacer(GlobalDimension.sectionPadding)
+        HorizontalDivider(
+            thickness = 2.dp,
+            color = Color.White,
+            modifier = Modifier.padding(horizontal = GlobalDimension.sectionPadding)
+        )
+        Spacer(GlobalDimension.sectionPadding)
+        Row(Modifier.fillMaxWidth()) {
+            Column(
+                Modifier.fillMaxWidth(0.5f),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(onClick = {}) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add Icon")
-                }
-                Text(text = currentWeather.name.orEmpty())
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More")
-                }
-            }
-            WeatherIcon(currentWeather.weather?.first()?.icon)
-            Text(text = getCurrentDate())
-            Text(
-                "${(currentWeather.main?.temp ?: 0.0).toInt()}°C",
-                fontSize = GlobalDimension.contentTitleFontSize
-            )
-            Text(currentWeather.weather?.first()?.description.orEmpty())
-            Spacer(GlobalDimension.sectionPadding)
-            HorizontalDivider(
-                thickness = 2.dp,
-                color = Color.Gray
-            )
-            Spacer(GlobalDimension.sectionPadding)
-            Row(Modifier.fillMaxWidth()) {
-                Column(
-                    Modifier.fillMaxWidth(0.5f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("${currentWeather.wind?.speed ?: 0.0} km/h")
-                    Text("Wind")
-                }
-                Column(
-                    Modifier.fillMaxWidth(0.5f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_carbon_location_current),
+                        contentDescription = "Wind Icon",
+                        tint = AppColor.textColor, modifier = Modifier
+                            .size(32.dp)
+                            .graphicsLayer(
+                                scaleX = -1f  // Flip horizontally, for vertical flip use scaleY = -1f
+                            )
+                    )
+                    Spacer(4.dp)
+                    Column {
+                        Text(
+                            "${currentWeather.wind?.speed ?: 0.0} km/h",
+                            color = AppColor.textColor
+                        )
+                        Text("Wind", color = AppColor.textColor)
+                    }
                 }
             }
-            Spacer(GlobalDimension.sectionPadding)
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(GlobalDimension.smallPadding)) {
-                Column(
-                    Modifier.fillMaxWidth(0.5f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("${currentWeather.main?.pressure ?: 0.0} mbar")
-                    Text("Pressure")
-                }
-                Column(
-                    Modifier.fillMaxWidth(0.5f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("${currentWeather.main?.humidity ?: 0.0} %")
-                    Text("Humidity")
+            Column(
+                Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_fluent_weather_rain_24_regular),
+                        contentDescription = "Humidity Icon",
+                        tint = AppColor.textColor, modifier = Modifier
+                            .size(32.dp)
+                    )
+                    Spacer(4.dp)
+                    Column {
+                        Text(
+                            "- %",
+                            color = AppColor.textColor
+                        )
+                        Text("Chance of rain", color = AppColor.textColor)
+                    }
                 }
             }
         }
+        Spacer(GlobalDimension.sectionPadding)
+        Row(
+            Modifier
+                .fillMaxWidth()
+        ) {
+            Column(
+                Modifier.fillMaxWidth(0.5f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_fluent_temperature_24_regular),
+                        contentDescription = "Pressure Icon",
+                        tint = AppColor.textColor, modifier = Modifier
+                            .size(32.dp)
+                    )
+                    Spacer(4.dp)
+                    Column {
+                        Text(
+                            "${currentWeather.main?.pressure ?: 0.0} mbar",
+                            color = AppColor.textColor
+                        )
+                        Text("Pressure", color = AppColor.textColor)
+                    }
+                }
+            }
+            Column(
+                Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_ion_water_outline),
+                        contentDescription = "Humidity Icon",
+                        tint = AppColor.textColor, modifier = Modifier
+                            .size(32.dp)
+                    )
+                    Spacer(4.dp)
+                    Column {
+                        Text(
+                            "${currentWeather.main?.humidity ?: 0.0} %",
+                            color = AppColor.textColor
+                        )
+                        Text("Humidity", color = AppColor.textColor)
+                    }
+                }
+            }
+        }
+        Spacer(GlobalDimension.sectionPadding)
     }
 }
 
 fun getCurrentDate(): String {
     val currentDate = LocalDate.now()
-    val formatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd") // "EEEE" for full day name
+    val formatter = DateTimeFormatter.ofPattern("EEEE | MMM dd") // "EEEE" for full day name
     return currentDate.format(formatter)
 }
