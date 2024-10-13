@@ -1,5 +1,8 @@
 package com.maulana.weathermobile.di.module
 
+import com.maulana.weathermobile.data.datasource.local.AppDatabase
+import com.maulana.weathermobile.data.datasource.local.WeatherLocalDataSource
+import com.maulana.weathermobile.data.datasource.local.WeatherLocalDataSourceImpl
 import com.maulana.weathermobile.data.datasource.remote.WeatherRemoteDataSource
 import com.maulana.weathermobile.data.datasource.remote.WeatherRemoteDataSourceImpl
 import com.maulana.weathermobile.data.datasource.remote.service.WeatherService
@@ -17,10 +20,11 @@ object WeatherModule {
 
     @Provides
     fun provideWeatherRepository(
-        weatherRemoteDataSource: WeatherRemoteDataSource
+        weatherRemoteDataSource: WeatherRemoteDataSource,
+        weatherLocalDataSource: WeatherLocalDataSource
     ): WeatherRepository {
         return WeatherRepositoryImpl(
-            weatherRemoteDataSource
+            weatherRemoteDataSource, weatherLocalDataSource
         )
     }
 
@@ -30,6 +34,11 @@ object WeatherModule {
         weatherService: WeatherService,
     ): WeatherRemoteDataSource {
         return WeatherRemoteDataSourceImpl(weatherService)
+    }
+
+    @Provides
+    fun provideWeatherLocalDataSource(appDatabase: AppDatabase): WeatherLocalDataSource {
+        return WeatherLocalDataSourceImpl(appDatabase)
     }
 
     @Provides

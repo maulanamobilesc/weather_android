@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.maulana.warehouse.util.GlobalDimension
+import com.maulana.weathermobile.util.GlobalDimension
 
 
 @Composable

@@ -1,14 +1,17 @@
 package com.maulana.weathermobile.ui.page.home
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maulana.warehouse.domain.UIState
 import com.maulana.weathermobile.BuildConfig
+import com.maulana.weathermobile.data.mapper.toCoord
+import com.maulana.weathermobile.data.mapper.toWeatherLocal
+import com.maulana.weathermobile.domain.WeatherIntent
 import com.maulana.weathermobile.domain.model.Coord
 import com.maulana.weathermobile.domain.model.CurrentWeather
 import com.maulana.weathermobile.domain.model.Forecast
+import com.maulana.weathermobile.domain.model.WeatherLocal
 import com.maulana.weathermobile.domain.repository.LocationRepository
 import com.maulana.weathermobile.domain.repository.WeatherRepository
 import com.maulana.weathermobile.util.hasLocationPermission
@@ -25,7 +28,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val weatherRepository: WeatherRepository,
     private val locationRepository: LocationRepository,
-    private val dispatcher: CoroutineDispatcher, private val sharedPreferences: SharedPreferences
+    private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _currentWeatherUiState = MutableStateFlow<UIState<CurrentWeather>>(UIState.Init)
@@ -34,7 +37,68 @@ class HomeViewModel @Inject constructor(
     private val _forecastUiState = MutableStateFlow<UIState<List<Forecast>>>(UIState.Init)
     val forecastUiState: StateFlow<UIState<List<Forecast>>> = _forecastUiState
 
-    fun getCurrentLocation(context: Context) {
+    private val _savedWeatherUiState = MutableStateFlow<UIState<List<WeatherLocal>>>(UIState.Init)
+    val savedWeatherUiState: StateFlow<UIState<List<WeatherLocal>>> = _savedWeatherUiState
+
+    private var _locationId = 0
+    private var _activeLocation: WeatherLocal? = null
+
+    private var _savedLocationList: List<WeatherLocal> = listOf()
+
+    fun processIntent(intent: WeatherIntent) {
+        when (intent) {
+            is WeatherIntent.FetchCurrentWeather -> getCurrentWeather(intent.coordinate)
+            is WeatherIntent.FetchForecast -> getForecast(intent.coordinate)
+            is WeatherIntent.GetSavedWeather -> getSavedWeather(intent.context)
+            is WeatherIntent.GetCurrentLocation -> getCurrentLocation(intent.context)
+            is WeatherIntent.InsertCurrentWeather -> insertCurrentWeather(intent.weather)
+            is WeatherIntent.FetchWeatherAndForecast -> getWeatherData()
+            is WeatherIntent.SetActiveLocation -> setActiveLocation(intent.locationIndex)
+        }
+    }
+
+    private fun setActiveLocation(locationIndex: Int) {
+        if (_savedLocationList.isNotEmpty()) {
+            _activeLocation = _savedLocationList[locationIndex]
+            _locationId = locationIndex
+            processIntent(WeatherIntent.FetchWeatherAndForecast())
+        }
+    }
+
+    private fun getSavedWeather(context: Context) {
+        viewModelScope.launch(dispatcher) {
+            weatherRepository.getAllSavedWeather().onStart {
+                _savedWeatherUiState.value = UIState.Loading
+            }.collectLatest { list ->
+                if (list.isEmpty()) {
+                    processIntent(WeatherIntent.GetCurrentLocation(context))
+                } else {
+                    _savedWeatherUiState.value = UIState.Success(list)
+                    _savedLocationList = list
+                    processIntent(WeatherIntent.SetActiveLocation(0))
+                }
+            }
+        }
+    }
+
+    private fun getWeatherData() {
+        processIntent(WeatherIntent.FetchCurrentWeather(_activeLocation!!.toCoord()))
+        processIntent(WeatherIntent.FetchForecast(_activeLocation!!.toCoord()))
+    }
+
+    private fun insertCurrentWeather(weatherLocal: WeatherLocal) {
+        viewModelScope.launch(dispatcher) {
+            runCatching {
+                weatherRepository.insertWeather(weatherLocal)
+            }.onFailure {
+
+            }.onSuccess {
+
+            }
+        }
+    }
+
+    private fun getCurrentLocation(context: Context) {
         if (!context.hasLocationPermission()) {
             _currentWeatherUiState.value = UIState.Error("Missing location permission")
         } else {
@@ -48,8 +112,7 @@ class HomeViewModel @Inject constructor(
                 }.onSuccess { result ->
                     result.collectLatest { state ->
                         if (state is UIState.Success) {
-                            getCurrentWeather(state.data)
-                            getForecast(state.data)
+                            processIntent(WeatherIntent.FetchWeatherAndForecast(true))
                         }
                     }
                 }
@@ -57,7 +120,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun getCurrentWeather(coordinate: Coord) {
+    private fun getCurrentWeather(coordinate: Coord, withInsert: Boolean = false) {
         viewModelScope.launch(dispatcher) {
             weatherRepository.getCurrentWeather(
                 apiKey = BuildConfig.API_KEY,
@@ -67,6 +130,15 @@ class HomeViewModel @Inject constructor(
                 _currentWeatherUiState.value = UIState.Loading
             }.collect { state ->
                 _currentWeatherUiState.value = state
+                if (state is UIState.Success && withInsert) {
+                    processIntent(
+                        WeatherIntent.InsertCurrentWeather(
+                            state.data.toWeatherLocal(
+                                _locationId
+                            )
+                        )
+                    )
+                }
             }
         }
     }

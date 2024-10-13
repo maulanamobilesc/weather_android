@@ -112,12 +112,16 @@ object RegisterDestination : Destinations {
 
 }
 
+object ManageLocationDestination : Destinations {
+    override val title: String
+        get() = "Manage Location"
+    override val route: String
+        get() = "location"
+    override val routeWithArgs: String
+        get() = route
+}
+
 val destinations = listOf(
     HomeDestination,
-    OnBoardingDestination,
-    RegisterDestination,
-    LoginDestination,
-    NoteDestination, InputDestination,
-    ProductDetailDestination,
-    TransactionDestination, AdjustmentDestination
+    ManageLocationDestination
 )

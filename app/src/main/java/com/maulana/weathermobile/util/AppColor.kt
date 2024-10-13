@@ -5,5 +5,6 @@ import androidx.compose.ui.graphics.Color
 object AppColor {
 
     val textColor = Color.White
+    val secondaryTextColor = Color.Black
 
 }

@@ -9,13 +9,17 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.maulana.warehouse.domain.UIState
+import com.maulana.weathermobile.data.datasource.remote.service.GeoCodingService
+import com.maulana.weathermobile.data.mapper.toLocationLocal
 import com.maulana.weathermobile.domain.model.Coord
-import com.maulana.weathermobile.util.hasLocationPermission
+import com.maulana.weathermobile.domain.model.LocationLocal
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 
-class LocationRemoteDataSourceImpl : LocationRemoteDataSource {
+class LocationRemoteDataSourceImpl(private val geoCodingService: GeoCodingService) :
+    LocationRemoteDataSource {
 
     @SuppressLint("MissingPermission")
     override fun getCurrentLocation(context: Context): Flow<UIState<Coord>> = callbackFlow {
@@ -43,6 +47,25 @@ class LocationRemoteDataSourceImpl : LocationRemoteDataSource {
 
         awaitClose {
             locationClient.removeLocationUpdates(locationCallback)
+        }
+    }
+
+    override fun searchLocation(query: String, apiKey: String): Flow<UIState<List<LocationLocal>>> {
+        return flow {
+            try {
+                emit(UIState.Loading)
+
+                emit(
+                    UIState.Success(
+                        geoCodingService.searchLocation(
+                            query = query,
+                            apiKey = apiKey,
+                            limit = 10
+                        ).map { it.toLocationLocal() })
+                )
+            } catch (e: Exception) {
+                emit(UIState.Error(e.localizedMessage.orEmpty()))
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "BASE_URL", "\"https://api.openweathermap.org/data/2.5/\"")
+        buildConfigField("String", "BASE_URL", "\"https://api.openweathermap.org/\"")
         buildConfigField("String", "API_KEY", "\"9149f652c009ffdde2b0330f7d8701b2\"")
     }
 
@@ -88,7 +88,8 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material)
     implementation(libs.gson)
     implementation(libs.retrofit)
 
@@ -99,11 +100,11 @@ dependencies {
 
     implementation(libs.accompanist.permissions)
 
-    //implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.runtime)
 
-    //ksp(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
-    //implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.ktx)
 
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization.json)

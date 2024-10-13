@@ -10,20 +10,18 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.maulana.weathermobile.ui.destinations.AdjustmentDestination
 import com.maulana.weathermobile.ui.destinations.HomeDestination
-import com.maulana.weathermobile.ui.destinations.TransactionDestination
+import com.maulana.weathermobile.ui.destinations.ManageLocationDestination
 import com.maulana.weathermobile.ui.destinations.destinations
 import com.maulana.weathermobile.ui.page.home.HomeScreen
+import com.maulana.weathermobile.ui.page.managelocation.ManageLocationScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,8 +45,6 @@ fun WeatherApp() {
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    var selectedMenuItem by remember { mutableIntStateOf(0) }
-
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackBarState) }
     ) { innerPaddings ->
@@ -59,7 +55,9 @@ fun WeatherApp() {
         ) {
             composable(HomeDestination.routeWithArgs) {
                 HomeScreen(navController, snackBarState)
-                selectedMenuItem = 0
+            }
+            composable(ManageLocationDestination.routeWithArgs) {
+                ManageLocationScreen(navController, snackBarState)
             }
         }
     }

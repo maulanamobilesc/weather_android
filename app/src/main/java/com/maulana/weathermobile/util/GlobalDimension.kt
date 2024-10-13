@@ -1,4 +1,4 @@
-package com.maulana.warehouse.util
+package com.maulana.weathermobile.util
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
