@@ -47,12 +47,20 @@ class HomeViewModel @Inject constructor(
 
     fun processIntent(intent: WeatherIntent) {
         when (intent) {
-            is WeatherIntent.FetchCurrentWeather -> getCurrentWeather(intent.coordinate)
+            is WeatherIntent.FetchCurrentWeather -> getCurrentWeather(
+                intent.coordinate,
+                intent.withInsert
+            )
+
             is WeatherIntent.FetchForecast -> getForecast(intent.coordinate)
             is WeatherIntent.GetSavedWeather -> getSavedWeather(intent.context)
             is WeatherIntent.GetCurrentLocation -> getCurrentLocation(intent.context)
             is WeatherIntent.InsertCurrentWeather -> insertCurrentWeather(intent.weather)
-            is WeatherIntent.FetchWeatherAndForecast -> getWeatherData()
+            is WeatherIntent.FetchWeatherAndForecast -> getWeatherData(
+                intent.coordinate,
+                intent.withInsert
+            )
+
             is WeatherIntent.SetActiveLocation -> setActiveLocation(intent.locationIndex)
         }
     }
@@ -61,7 +69,7 @@ class HomeViewModel @Inject constructor(
         if (_savedLocationList.isNotEmpty()) {
             _activeLocation = _savedLocationList[locationIndex]
             _locationId = locationIndex
-            processIntent(WeatherIntent.FetchWeatherAndForecast())
+            processIntent(WeatherIntent.FetchWeatherAndForecast(_activeLocation!!.toCoord()))
         }
     }
 
@@ -81,9 +89,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun getWeatherData() {
-        processIntent(WeatherIntent.FetchCurrentWeather(_activeLocation!!.toCoord()))
-        processIntent(WeatherIntent.FetchForecast(_activeLocation!!.toCoord()))
+    private fun getWeatherData(coordinate: Coord, withInsert: Boolean) {
+        processIntent(WeatherIntent.FetchCurrentWeather(coordinate, withInsert))
+        processIntent(WeatherIntent.FetchForecast(coordinate))
     }
 
     private fun insertCurrentWeather(weatherLocal: WeatherLocal) {
@@ -112,7 +120,7 @@ class HomeViewModel @Inject constructor(
                 }.onSuccess { result ->
                     result.collectLatest { state ->
                         if (state is UIState.Success) {
-                            processIntent(WeatherIntent.FetchWeatherAndForecast(true))
+                            processIntent(WeatherIntent.FetchWeatherAndForecast(state.data, true))
                         }
                     }
                 }

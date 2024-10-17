@@ -1,6 +1,12 @@
 package com.maulana.weathermobile.ui.page.home
 
 import android.Manifest
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,7 +57,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.maulana.warehouse.core.component.LoadingComponent
 import com.maulana.warehouse.core.component.PageErrorMessageHandler
 import com.maulana.warehouse.core.component.Spacer
 import com.maulana.warehouse.domain.UIState
@@ -106,28 +111,23 @@ fun HomeScreen(
             savedWeatherUiState is UIState.Loading,
             { processIntent(WeatherIntent.GetSavedWeather(context)) })
 
+        checkErrorState(currentWeatherUiState, forecastUiState, savedWeatherUiState, snackBarState)
+
         Box(
             Modifier
                 .fillMaxSize()
                 .pullRefresh(pullRefreshState)
         ) {
-            when (savedWeatherUiState) {
-                is UIState.Error -> PageErrorMessageHandler(
-                    (savedWeatherUiState as UIState.Error).message,
-                    snackBarState
-                )
-
-                is UIState.Success -> HomeContent(
+            if (savedWeatherUiState is UIState.Success) {
+                HomeContent(
                     this@apply,
                     navController,
                     currentWeatherUiState,
                     forecastUiState,
-                    savedWeatherUiState,
-                    snackBarState
+                    savedWeatherUiState
                 )
-
-                else -> LoadingComponent()
             }
+
 
             PullRefreshIndicator(
                 savedWeatherUiState is UIState.Loading,
@@ -154,51 +154,70 @@ fun HomeScreen(
 }
 
 @Composable
+fun checkErrorState(
+    currentWeatherUiState: UIState<CurrentWeather>,
+    forecastUiState: UIState<List<Forecast>>,
+    savedWeatherUiState: UIState<List<WeatherLocal>>,
+    snackBarState: SnackbarHostState
+) {
+    if (currentWeatherUiState is UIState.Error) {
+        PageErrorMessageHandler(
+            currentWeatherUiState.message,
+            snackBarState
+        )
+    }
+    if (forecastUiState is UIState.Error) {
+        PageErrorMessageHandler(
+            forecastUiState.message,
+            snackBarState
+        )
+    }
+    if (savedWeatherUiState is UIState.Error) {
+        PageErrorMessageHandler(savedWeatherUiState.message, snackBarState)
+    }
+}
+
+
+@Composable
 fun HomeContent(
     homeViewModel: HomeViewModel,
     navController: NavHostController,
     currentWeatherUIState: UIState<CurrentWeather>,
     forecastUiState: UIState<List<Forecast>>,
-    savedWeatherUiState: UIState<List<WeatherLocal>>,
-    snackBarState: SnackbarHostState
+    savedWeatherUiState: UIState<List<WeatherLocal>>
 ) {
+    val locationList = (savedWeatherUiState as UIState.Success<List<WeatherLocal>>).data
+    val pagerState = rememberPagerState(pageCount = { locationList.size })
 
-    if (savedWeatherUiState is UIState.Success) {
-        val locationList = savedWeatherUiState.data
-        val pagerState = rememberPagerState(pageCount = { locationList.size })
+    LaunchedEffect(pagerState.currentPage) {
+        homeViewModel.processIntent(WeatherIntent.SetActiveLocation(pagerState.currentPage))
+    }
 
-        LaunchedEffect(pagerState.currentPage) {
-            homeViewModel.processIntent(WeatherIntent.SetActiveLocation(pagerState.currentPage))
-            homeViewModel.processIntent(WeatherIntent.FetchWeatherAndForecast())
-        }
-
-        HorizontalPager(state = pagerState) {
-            LazyColumn(Modifier.fillMaxSize()) {
-                item {
-                    when (currentWeatherUIState) {
-                        is UIState.Error -> PageErrorMessageHandler(
-                            currentWeatherUIState.message,
-                            snackBarState
-                        )
-
-                        is UIState.Success -> MainContent(
+    HorizontalPager(state = pagerState) {
+        LazyColumn(Modifier.fillMaxSize()) {
+            item {
+                if (currentWeatherUIState is UIState.Success) {
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 5000)) + expandIn(),
+                        exit = shrinkOut() + fadeOut(animationSpec = tween(durationMillis = 5000))
+                    ) {
+                        MainContent(
                             currentWeatherUIState.data,
                             navController,
                             pagerState
                         )
-
-                        else -> LoadingComponent()
                     }
                 }
-                item {
-                    when (forecastUiState) {
-                        is UIState.Error -> PageErrorMessageHandler(
-                            forecastUiState.message,
-                            snackBarState
-                        )
-
-                        is UIState.Success -> ForecastContent(forecastUiState.data)
-                        else -> LoadingComponent()
+            }
+            item {
+                if (forecastUiState is UIState.Success) {
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 5000)) + expandIn(),
+                        exit = shrinkOut() + fadeOut(animationSpec = tween(durationMillis = 5000))
+                    ) {
+                        ForecastContent(forecastUiState.data)
                     }
                 }
             }
@@ -325,7 +344,10 @@ fun MainContent(
                 color = AppColor.textColor,
                 fontWeight = FontWeight.Bold
             )
-            Text(currentWeather.weather?.first()?.description.orEmpty(), color = AppColor.textColor)
+            Text(
+                currentWeather.weather?.first()?.description.orEmpty(),
+                color = AppColor.textColor
+            )
             Spacer(GlobalDimension.sectionPadding)
             HorizontalDivider(
                 thickness = 2.dp,
