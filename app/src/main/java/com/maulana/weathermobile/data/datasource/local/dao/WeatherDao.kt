@@ -19,4 +19,7 @@ interface WeatherDao {
     @Query("SELECT COUNT(*) FROM weather")
     fun getDataCount(): Int
 
+    @Query("DELETE FROM weather WHERE location_id = :locationId")
+    suspend fun deleteSavedWeather(locationId: Int)
+
 }

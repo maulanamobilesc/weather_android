@@ -16,19 +16,24 @@ sealed class LoginUserIntent : UserIntent() {
     data object ShowSignUp : LoginUserIntent()
 }
 
-sealed class LocationIntent: UserIntent() {
+sealed class LocationIntent : UserIntent() {
     data object LoadSavedWeather : LocationIntent()
     data object SearchLocation : LocationIntent()
     data class GetWeatherFromSelectedCity(val locationLocal: LocationLocal) : LocationIntent()
     data class InsertCurrentWeather(val weather: WeatherLocal) : LocationIntent()
+    data class DeleteLocation(val locationId: Int) : LocationIntent()
 }
 
-sealed class WeatherIntent: UserIntent() {
-    data class FetchWeatherAndForecast(val withInsert: Boolean = false): WeatherIntent()
-    data class FetchCurrentWeather(val coordinate: Coord) : WeatherIntent()
+sealed class WeatherIntent : UserIntent() {
+    data class FetchWeatherAndForecast(val coordinate: Coord, val withInsert: Boolean = false) :
+        WeatherIntent()
+
+    data class FetchCurrentWeather(val coordinate: Coord, val withInsert: Boolean = false) :
+        WeatherIntent()
+
     data class FetchForecast(val coordinate: Coord) : WeatherIntent()
     data class GetSavedWeather(val context: Context) : WeatherIntent()
     data class GetCurrentLocation(val context: Context) : WeatherIntent()
     data class InsertCurrentWeather(val weather: WeatherLocal) : WeatherIntent()
-    data class SetActiveLocation(val locationIndex:Int) : WeatherIntent()
+    data class SetActiveLocation(val locationIndex: Int) : WeatherIntent()
 }

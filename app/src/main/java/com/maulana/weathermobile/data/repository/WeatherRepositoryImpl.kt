@@ -9,7 +9,10 @@ import com.maulana.weathermobile.domain.model.WeatherLocal
 import com.maulana.weathermobile.domain.repository.WeatherRepository
 import kotlinx.coroutines.flow.Flow
 
-class WeatherRepositoryImpl(private val remoteDataSource: WeatherRemoteDataSource, private val localDataSource: WeatherLocalDataSource) :
+class WeatherRepositoryImpl(
+    private val remoteDataSource: WeatherRemoteDataSource,
+    private val localDataSource: WeatherLocalDataSource
+) :
     WeatherRepository {
 
     override fun getCurrentWeather(
@@ -37,6 +40,10 @@ class WeatherRepositoryImpl(private val remoteDataSource: WeatherRemoteDataSourc
     }
 
     override fun getDataCount(): Int {
-        return  localDataSource.getDataCount()
+        return localDataSource.getDataCount()
+    }
+
+    override suspend fun deleteSavedWeather(locationId: Int) {
+        return localDataSource.deleteSavedWeather(locationId)
     }
 }

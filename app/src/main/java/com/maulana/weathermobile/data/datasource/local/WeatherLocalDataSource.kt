@@ -11,4 +11,6 @@ interface WeatherLocalDataSource {
 
     fun getDataCount(): Int
 
+    suspend fun deleteSavedWeather(locationId: Int)
+
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,6 +44,7 @@ import androidx.navigation.NavHostController
 import com.maulana.warehouse.core.component.LoadingComponent
 import com.maulana.warehouse.core.component.PageErrorMessageHandler
 import com.maulana.warehouse.domain.UIState
+import com.maulana.weathermobile.core.component.SwipeToDeleteItem
 import com.maulana.weathermobile.core.component.WeatherIcon
 import com.maulana.weathermobile.core.component.WeatherIconSize
 import com.maulana.weathermobile.domain.LocationIntent
@@ -189,41 +190,46 @@ fun ManageLocationScreen(
                         verticalArrangement = Arrangement.spacedBy(GlobalDimension.sectionPadding)
                     ) {
                         items(items = (savedWeatherUiState as UIState.Success<List<WeatherLocal>>).data) { item ->
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = Color.White,
-                                        shape = RoundedCornerShape(16.dp)
-                                    ),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.padding(start = GlobalDimension.sectionPadding)) {
-                                    Text(
-                                        item.locationName,
-                                        fontSize = GlobalDimension.defaultFontSize,
-                                        color = AppColor.secondaryTextColor,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        "${item.minTemperature.toInt()}°c /${item.maxTemperature.toInt()}°c",
-                                        fontSize = GlobalDimension.smallFontSize,
-                                        color = AppColor.secondaryTextColor,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Column(
-                                    modifier = Modifier.padding(GlobalDimension.sectionPadding),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                            SwipeToDeleteItem(120.dp, onClickDelete = {
+                                processIntent(LocationIntent.DeleteLocation(item.locationId))
+                            }) {
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                        .background(
+                                            color = Color.White,
+                                            shape = RoundedCornerShape(16.dp)
+                                        ),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    WeatherIcon(item.weatherCode, WeatherIconSize.SMALL)
-                                    Text(
-                                        item.currentWeather,
-                                        fontSize = GlobalDimension.smallFontSize,
-                                        color = AppColor.secondaryTextColor,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Column(modifier = Modifier.padding(start = GlobalDimension.sectionPadding)) {
+                                        Text(
+                                            item.locationName,
+                                            fontSize = GlobalDimension.defaultFontSize,
+                                            color = AppColor.secondaryTextColor,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            "${item.minTemperature.toInt()}°c /${item.maxTemperature.toInt()}°c",
+                                            fontSize = GlobalDimension.smallFontSize,
+                                            color = AppColor.secondaryTextColor,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                    Column(
+                                        modifier = Modifier.padding(GlobalDimension.sectionPadding),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        WeatherIcon(item.weatherCode, WeatherIconSize.SMALL)
+                                        Text(
+                                            item.currentWeather,
+                                            fontSize = GlobalDimension.smallFontSize,
+                                            color = AppColor.secondaryTextColor,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }

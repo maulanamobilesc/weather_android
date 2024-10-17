@@ -51,6 +51,19 @@ class ManageLocationViewModel @Inject constructor(
             is LocationIntent.SearchLocation -> searchLocation()
             is LocationIntent.GetWeatherFromSelectedCity -> getCurrentWeather(intent.locationLocal)
             is LocationIntent.InsertCurrentWeather -> insertCurrentWeather(intent.weather)
+            is LocationIntent.DeleteLocation -> deleteLocation(intent.locationId)
+        }
+    }
+
+    private fun deleteLocation(locationId: Int) {
+        viewModelScope.launch(dispatcher) {
+            runCatching {
+                weatherRepository.deleteSavedWeather(locationId)
+            }.onFailure {
+
+            }.onSuccess {
+
+            }
         }
     }
 

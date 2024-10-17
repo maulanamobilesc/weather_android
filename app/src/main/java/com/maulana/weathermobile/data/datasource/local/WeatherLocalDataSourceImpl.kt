@@ -20,4 +20,8 @@ class WeatherLocalDataSourceImpl(private val appDatabase: AppDatabase) : Weather
     override fun getDataCount(): Int {
         return appDatabase.weatherDao().getDataCount()
     }
+
+    override suspend fun deleteSavedWeather(locationId: Int) {
+        return appDatabase.weatherDao().deleteSavedWeather(locationId)
+    }
 }

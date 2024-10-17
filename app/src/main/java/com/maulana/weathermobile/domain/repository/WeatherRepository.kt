@@ -26,4 +26,6 @@ interface WeatherRepository {
 
     fun getDataCount(): Int
 
+    suspend fun deleteSavedWeather(locationId: Int)
+
 }
