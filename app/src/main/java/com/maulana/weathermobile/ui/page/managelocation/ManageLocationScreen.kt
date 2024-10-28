@@ -2,6 +2,7 @@ package com.maulana.weathermobile.ui.page.managelocation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -91,7 +93,7 @@ fun ManageLocationScreen(
                         ), alpha = 1.0f
                     )
             ) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -99,10 +101,15 @@ fun ManageLocationScreen(
                             tint = Color.White // Set the color of the back arrow to white
                         )
                     }
-                    Text(
-                        text = "Manage location",
-                        color = Color.White
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Manage location",
+                            color = Color.White
+                        )
+                    }
                 }
 
                 val colors1 = SearchBarDefaults.colors()
@@ -129,7 +136,20 @@ fun ManageLocationScreen(
                                     tint = Color.Black
                                 )
                             },
-                            trailingIcon = null,
+                            trailingIcon = {
+                                if (searchBarActive) {
+                                    IconButton(onClick = {
+                                        query.value = ""
+                                        searchBarActive = false
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Clear Icon",
+                                            tint = Color.Black
+                                        )
+                                    }
+                                }
+                            },
                             colors = colors1.inputFieldColors,
                             interactionSource = null,
                         )
@@ -190,13 +210,13 @@ fun ManageLocationScreen(
                         verticalArrangement = Arrangement.spacedBy(GlobalDimension.sectionPadding)
                     ) {
                         items(items = (savedWeatherUiState as UIState.Success<List<WeatherLocal>>).data) { item ->
-                            SwipeToDeleteItem(120.dp, onClickDelete = {
+                            SwipeToDeleteItem(100.dp, onClickDelete = {
                                 processIntent(LocationIntent.DeleteLocation(item.locationId))
                             }) {
                                 Row(
                                     Modifier
                                         .fillMaxWidth()
-                                        .height(120.dp)
+                                        .height(100.dp)
                                         .background(
                                             color = Color.White,
                                             shape = RoundedCornerShape(16.dp)
