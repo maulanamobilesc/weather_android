@@ -1,11 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    //id("kotlin-kapt")
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     kotlin("plugin.serialization") version "2.0.0"
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -25,7 +32,7 @@ android {
         }
 
         buildConfigField("String", "BASE_URL", "\"https://api.openweathermap.org/\"")
-        buildConfigField("String", "API_KEY", "\"9149f652c009ffdde2b0330f7d8701b2\"")
+        buildConfigField("String", "API_KEY", "\"${localProperties.getProperty("apiKey")}\"")
     }
 
     buildTypes {
@@ -48,9 +55,6 @@ android {
         compose = true
         buildConfig = true
     }
-    /*composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.5"
-    }*/
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -59,9 +63,6 @@ android {
     ksp {
         arg("dagger.hilt.disableModulesHaveInstallInCheck", "true")
     }
-    /*    kapt {
-            correctErrorTypes = true
-        }*/
 
 
 }
