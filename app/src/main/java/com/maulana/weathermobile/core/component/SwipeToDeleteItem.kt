@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -24,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
@@ -50,7 +52,7 @@ fun SwipeToDeleteItem(
         // Background showing Delete Icon
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize().clip(RoundedCornerShape(16.dp))
                 .background(Color.Red)
                 .padding(vertical = 16.dp)
                 .clickable {
@@ -68,8 +70,8 @@ fun SwipeToDeleteItem(
                 contentDescription = "Delete",
                 tint = Color.White,
                 modifier = Modifier
-                    .size(72.dp)
-                    .padding(end = 25.dp)
+                    .size(64.dp)
+                    .padding(end = 32.dp)
             )
         }
 
