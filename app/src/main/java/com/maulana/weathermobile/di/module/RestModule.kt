@@ -3,7 +3,6 @@ package com.maulana.weathermobile.di.module
 import android.app.Application
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.google.gson.GsonBuilder
-import com.google.gson.Strictness
 import com.maulana.weathermobile.BuildConfig
 import dagger.Module
 import dagger.Provides
@@ -39,18 +38,24 @@ object RestModule {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
-        return OkHttpClient.Builder()
-            .retryOnConnectionFailure(true).addInterceptor(loggingInterceptor).addInterceptor(
-                ChuckerInterceptor.Builder(application)
-                    .maxContentLength(250_000L) // Maximum length of content stored in memory (250KB)
-                    .redactHeaders(
-                        "Authorization",
-                        "Bearer"
-                    ) // Hide sensitive headers like "Authorization"
-                    .alwaysReadResponseBody(true) // Read the response body even for errors
-                    .build()
-            )
-            .build()
+        return if (BuildConfig.DEBUG) {
+            OkHttpClient.Builder()
+                .retryOnConnectionFailure(true).addInterceptor(loggingInterceptor).addInterceptor(
+                    ChuckerInterceptor.Builder(application)
+                        .maxContentLength(250_000L) // Maximum length of content stored in memory (250KB)
+                        .redactHeaders(
+                            "Authorization",
+                            "Bearer"
+                        ) // Hide sensitive headers like "Authorization"
+                        .alwaysReadResponseBody(true) // Read the response body even for errors
+                        .build()
+                )
+                .build()
+        } else {
+            OkHttpClient.Builder()
+                .retryOnConnectionFailure(true)
+                .build()
+        }
     }
 
 }
